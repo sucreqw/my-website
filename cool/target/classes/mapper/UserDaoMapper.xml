@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sucre.dao.UserDao">
+    <!-- 全部数据查询 -->
+    <select id="selectUser"
+		resultType="com.sucre.entity.UserEntity">
+		select * from user limit ${low}, ${up}
+	</select>
+    <select id="selectWeibo"
+		resultType="com.sucre.entity.weiboEntity">
+		select * from weibo limit ${low}, ${up}
+	</select>
+	
+   
+    <select id="selectComment"
+		resultType="com.sucre.entity.commentEntity">
+		select * from comments limit ${low}, ${up}
+	</select>
+	
+    <select id="selectDrone"
+		resultType="com.sucre.entity.DroneEntity">
+		select * from drone limit ${low}, ${up}
+	</select>
+	<select id="selectDroneComment"
+		resultType="com.sucre.entity.DroneCommentEntity">
+		select * from dronecomment limit ${low}, ${up}
+	</select>
+	<select id="selectGeneration"
+		resultType="com.sucre.entity.GenerationEntity">
+		select * from generations limit ${low}, ${up}
+	</select>
+    <!-- 全部数据查询 -->
+    <!-- 全部更新数据 -->
+    
+    <update id="updataUser">
+    	 update user set token=#{token},regday=#{regday},regip=#{regip},uid=#{uid},nickname=#{nickname},psd=#{psd},refresh_token=#{refresh_token},isblock=#{isblock},cookie=#{cookie},avater=#{avater} ,ismanager=#{ismanager}
+    	 where id=#{id}
+    </update>
+    <update id="updataWeibo">
+    <!-- token, postday,postip,mid,nickname,avater,content,picurl -->
+    	 update weibo set token=#{token},postday=#{postday},postip=#{postip},mid=#{mid},nickname=#{nickname},avater=#{avater} ,content=#{content},picurl=#{picurl}
+    	 where id=#{id}
+    </update>
+    
+    <update id="updataComment">
+    <!-- postip,postday,nickname,token,avater,content,wid -->
+    	 update comments set postip=#{postip},postday=#{postday},nickname=#{nickname},token=#{token},avater=#{avater} ,content=#{content},wid=#{wid}
+    	 where id=#{id}
+    </update>
+    
+    <update id="updataDrone">
+    <!-- type,urls,likecount,content -->
+    	 update drone set type=#{type},urls=#{urls},likecount=#{likecount},content=#{content}
+    	 where id=#{id}
+    </update>
+    <update id="updataDroneComment">
+    <!-- mid, token ,avater ,nickname ,content,postip,postday-->
+    	 update dronecomment set mid=#{mid},token=#{token},avater=#{avater},nickname=#{nickname},content=#{content},postip=#{postip},postday=#{postday}
+    	 where id=#{id}
+    </update>
+    <update id="updataGeneration">
+    <!--nickname,wife,gender,father,sons,details,generation,birthday,avater,cookie-->
+    	 update generations set nickname=#{nickname},wife=#{wife},gender=#{gender},father=#{father},sons=#{sons},details=#{details},generation=#{generation},birthday=#{birthday},avater=#{avater},cookie=#{cookie}
+    	 where id=#{id}
+    </update>
+    <!-- 全部更新数据 -->
+    
+    <!-- 删除数据 -->
+    <delete id="deleteSome">
+       delete from ${table} where id=#{id}
+    </delete>
+    
+    
+	<select id="selectByAccount"
+		resultType="com.sucre.entity.UserEntity">
+		select * from user where token=#{token}
+	</select>
+	<select id="selectByCookie"
+		resultType="com.sucre.entity.UserEntity">
+		select * from user where cookie=#{cookie}
+	</select>
+	<select id="getweibo" resultType="com.sucre.entity.weiboEntity">
+		select
+		id,postday,mid,nickname,avater,content,picurl from weibo order by id
+		desc limit ${low}, ${up}
+	</select>
+	<!-- (postip,postday,nickname,token,avater,content,wid) -->
+	<select id="getcomments"
+		resultType="com.sucre.entity.commentEntity">
+		select
+		id,postip,postday,nickname,token,avater,content,wid
+		from comments where wid=#{wid} order by id
+		desc limit ${low}, ${up}
+	</select>
+
+	<!-- 取无人机数据库 -->
+	<select id="getdrones" resultType="com.sucre.entity.DroneEntity">
+		select * from drone order by
+		id desc limit ${low}, ${up}
+	</select>
+	<!-- 取无人机区评论 -->
+	<select id="getDroneComment"
+		resultType="com.sucre.entity.DroneCommentEntity">
+		select * from dronecomment where mid=#{mid} order by id desc limit
+		${low},${up}
+	</select>
+	
+	
+	<!-- 多重查询用resultmap来映射结果 -->
+    <resultMap type="com.sucre.entity.GenerationEntity"  id="baseresultMap">
+
+     <id property="id" column="child_id"/>
+
+     <result property="nickname" column="nickname"/>
+     <result property="wife" column="wife"/>
+     <result property="gender" column="gender"/>
+     <result property="father" column="father"/>
+     <result property="sons" column="sons"/>
+     <result property="details" column="details"/>
+     <result property="generation" column="generation"/>
+     <result property="fatherName" column="fatherName"/>
+      <result property="wifeName" column="wifeName"/>
+    </resultMap> 
+  	<!-- 取族谱信息 -->
+	<select id="getGenInfo" resultType="com.sucre.entity.GenerationEntity">
+	    select child.id,child.nickname,child.wife,child.gender,child.father,child.sons,child.details,child.generation,child.birthday,child.avater ,father.nickname as fatherName,father.wife as wifeName
+	    from generations child,generations father 
+	    where father.id=child.father and child.id=#{id}
+	</select>
+	<select id="getSon" resultType="com.sucre.entity.SonEntity">
+	    select nickname,wife
+	    from generations
+	    where id=#{id}
+	</select>
+	<select id="getSomeone" resultType="com.sucre.entity.SonEntity">
+	    select id,nickname,wife
+	    from generations
+	    where nickname like "%" #{nickname} "%"
+	</select>
+	<select id="getFirst" resultType="com.sucre.entity.GenerationEntity">
+	    select *
+	    from generations
+	    where id=#{id}
+	</select>
+	
+	<!-- 添加注册用户 -->
+	<insert id="addUser">
+	    insert into user (token,regday,regip,uid,nickname,psd,refresh_token,isblock,cookie,avater,ismanager) 
+	    values(#{token},#{regday},#{regip},#{uid},#{nickname},#{psd},#{refresh_token},#{isblock},#{cookie},#{avater},#{ismanager})
+	</insert>
+	<!-- 族谱添加信息 -->
+	<insert id="addperson" parameterType="com.sucre.entity.GenerationEntity">
+	 
+	    insert into generations 
+		(nickname,wife,gender,father,sons,details,generation,birthday,avater,cookie) 
+		values(#{nickname},#{wife},#{gender},#{father},#{sons},#{details},#{generation},#{birthday},#{avater},#{cookie})
+		
+		   <!-- nickname,wife,gender,father,sons,details,generation -->
+	    
+	        <!-- selectKey 标签实现主键返回 -->
+		    <!-- keyColumn:主键对应的表中的哪一列 -->
+		    <!-- keyProperty：主键对应的pojo中的哪一个属性 -->
+		    <!-- order：设置在执行insert语句前执行查询id的sql，在执行insert语句之后执行查询id的sql -->
+		    <!-- resultType：设置返回的id的类型 -->
+		    <selectKey keyColumn="id" keyProperty="id" order="AFTER"
+		        resultType="int">
+		         SELECT @@IDENTITY AS id
+		    </selectKey>
+	    
+	</insert>
+	
+	<insert id="addpost">
+		<!-- token VARCHAR(32), postday TIMESTAMP,postip VARCHAR(15), mid VARCHAR(10),nickname 
+			VARCHAR(32),avater VARCHAR(32),content,picutl -->
+		insert into weibo
+		(token,postday,postip,mid,nickname,avater,content,picurl)
+		values(#{token},#{postday},#{postip},#{mid},#{nickname},#{avater},#{content},#{picurl})
+	</insert>
+	<insert id="addcomment">
+		<!-- postip VARCHAR(15), postday TIMESTAMP,nickname VARCHAR(32),token VARCHAR(32),avater 
+			VARCHAR(32) content VARCHAR(140),wid INT) -->
+		insert into comments
+		(postip,postday,nickname,token,avater,content,wid)
+		values(#{postip},#{postday},#{nickname},#{token},#{avater},#{content},#{wid})
+	</insert>
+	<!-- 无人机评论区 -->
+	<insert id="addDroneComment">
+		<!-- mid int,token VARCHAR(32),avater VARCHAR(32),nickname VARCHAR(32),content 
+			VARCHAR(140) -->
+		insert into dronecomment
+		(mid,token,avater,nickname,content,postip,postday)
+		values(#{mid},#{token},#{avater},#{nickname},#{content},#{postip},#{postday})
+	</insert>
+   <!-- 无人机作品 -->
+   <insert id="addDrone">
+		<!-- type,urls,likecount,content -->
+		insert into drone
+		(type,urls,likecount,content)
+		values(#{type},#{urls},#{likecount},#{content})
+	</insert>
+   
+   
+    <!-- 更新族谱父亲或儿子的信息 -->
+    <update id="updataInfo">
+    	update generations set father=#{father},sons=#{sons} where id=#{id}
+    </update>
+	<update id="addlike">
+		UPDATE weibo set mid=mid+1 where id=#{id};
+	</update>
+	<update id="addDroneLike">
+		UPDATE drone set likecount=likecount+1 where
+		id=#{id};
+	</update>
+
+</mapper>
